@@ -1,4 +1,4 @@
-package com.home.linkshortener;
+package com.course.project.varabei.linkshortener;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
