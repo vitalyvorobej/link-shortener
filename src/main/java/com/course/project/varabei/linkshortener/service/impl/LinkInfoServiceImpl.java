@@ -1,6 +1,8 @@
 package com.course.project.varabei.linkshortener.service.impl;
 
+import com.course.project.varabei.linkshortener.configuration.LinkInfoProperty;
 import com.course.project.varabei.linkshortener.dao.dto.request.CreateLinkInfoRequestDto;
+import com.course.project.varabei.linkshortener.dao.dto.request.UpdateLinkInfoRequestDto;
 import com.course.project.varabei.linkshortener.dao.dto.response.LinkInfoResponseDto;
 import com.course.project.varabei.linkshortener.dao.model.LinkInfo;
 import com.course.project.varabei.linkshortener.dao.repository.LinkInfoRepository;
@@ -8,7 +10,6 @@ import com.course.project.varabei.linkshortener.service.LinkInfoService;
 import com.course.project.varabei.linkshortener.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,13 +20,12 @@ import java.util.List;
 public class LinkInfoServiceImpl implements LinkInfoService {
 
     private final LinkInfoRepository linkInfoRepository;
+    private final LinkInfoProperty linkInfoProperty;
 
-    @Value("${linkLength}")
-    private int linkLength;
 
     @Override
     public LinkInfoResponseDto createLinkInfo(CreateLinkInfoRequestDto request) {
-        String randomString = RandomStringUtils.randomAlphanumeric(linkLength);
+        String randomString = generateShortLink();
 
         LinkInfo linkInfo = LinkInfo.builder()
                 .shortLink(randomString)
@@ -52,6 +52,22 @@ public class LinkInfoServiceImpl implements LinkInfoService {
     public List<LinkInfoResponseDto> findByFilter() {
         return linkInfoRepository.findAll().stream()
                 .map(LinkInfoServiceImpl::linkInfoResponseBuilder).toList();
+    }
+
+    @Override
+    public void deleteShortLinkById(String shortLink) {
+        linkInfoRepository.deleteById(shortLink);
+    }
+
+    @Override
+    public LinkInfoResponseDto updateLinkInfo(UpdateLinkInfoRequestDto request) {
+        String newShortLink = generateShortLink();
+        return linkInfoRepository.update(request, newShortLink);
+    }
+
+
+    private String generateShortLink() {
+        return RandomStringUtils.randomAlphanumeric(linkInfoProperty.getShortLinkLength());
     }
 
     private static LinkInfoResponseDto linkInfoResponseBuilder(LinkInfo link) {

@@ -1,5 +1,6 @@
 package com.course.project.varabei.linkshortener.service.impl;
 
+import com.course.project.varabei.linkshortener.configuration.LinkInfoProperty;
 import com.course.project.varabei.linkshortener.dao.dto.request.CreateLinkInfoRequestDto;
 import com.course.project.varabei.linkshortener.dao.dto.response.LinkInfoResponseDto;
 import com.course.project.varabei.linkshortener.dao.model.LinkInfo;
@@ -10,6 +11,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -22,24 +26,27 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-
+@SpringBootTest
+@ActiveProfiles("test")
 class LinkInfoServiceImplTest {
 
     @InjectMocks
     private LinkInfoServiceImpl linkInfoService;
     @Mock
     private LinkInfoRepositoryImpl linkInfoRepository;
+    @Autowired
+    private LinkInfoProperty linkInfoProperty;
 
     private static final LocalDateTime now = LocalDateTime.now();
     private final String testLink = "https://test-link.com";
     private final String description = "description for test";
-    private final String randomString = RandomStringUtils.randomAlphanumeric(10);
+    private final String randomString = RandomStringUtils.randomAlphanumeric(8);
 
 
     @BeforeEach
     void setUp() {
         openMocks(this);
-        linkInfoService = new LinkInfoServiceImpl(linkInfoRepository);
+        linkInfoService = new LinkInfoServiceImpl(linkInfoRepository, linkInfoProperty);
     }
 
     @Test
@@ -52,7 +59,7 @@ class LinkInfoServiceImplTest {
 
         LinkInfoResponseDto response = linkInfoService.createLinkInfo(createLinkInfoRequestDto);
 
-        assertEquals(10, response.getShortLink().length());
+        assertEquals(linkInfoProperty.getShortLinkLength(), response.getShortLink().length());
         assertEquals(getData().getShortLink(), response.getShortLink());
         assertEquals(testLink, response.getLink());
         assertEquals(description, response.getDescription());
