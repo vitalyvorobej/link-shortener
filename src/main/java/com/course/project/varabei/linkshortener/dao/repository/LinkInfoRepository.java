@@ -1,5 +1,7 @@
 package com.course.project.varabei.linkshortener.dao.repository;
 
+import com.course.project.varabei.linkshortener.dao.dto.request.UpdateLinkInfoRequestDto;
+import com.course.project.varabei.linkshortener.dao.dto.response.LinkInfoResponseDto;
 import com.course.project.varabei.linkshortener.dao.model.LinkInfo;
 
 import java.util.List;
@@ -13,4 +15,8 @@ public interface LinkInfoRepository {
     LinkInfo save(LinkInfo linkInfoModel);
 
     List<LinkInfo> findAll();
+
+    void deleteById(String id);
+
+    LinkInfoResponseDto update(UpdateLinkInfoRequestDto updateLinkInfoRequestDto, String shortLink);
 }
