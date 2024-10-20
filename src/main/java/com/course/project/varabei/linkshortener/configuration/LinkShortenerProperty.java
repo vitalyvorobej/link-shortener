@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Setter
 @Getter
 @Component
-@ConfigurationProperties(prefix = "link-shortener")
-public class LinkInfoProperty {
+@ConfigurationProperties("link-shortener")
+public class LinkShortenerProperty {
     private Integer shortLinkLength;
 }
