@@ -7,6 +7,7 @@ import com.course.project.varabei.linkshortener.dao.dto.response.LinkInfoRespons
 import com.course.project.varabei.linkshortener.dao.model.LinkInfo;
 import com.course.project.varabei.linkshortener.dao.repository.LinkInfoRepository;
 import com.course.project.varabei.linkshortener.service.LinkInfoService;
+import com.course.project.varabei.linkshortener.service.annotation.LogExecutionTime;
 import com.course.project.varabei.linkshortener.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -25,6 +26,7 @@ public class LinkInfoServiceImpl implements LinkInfoService {
 
 
     @Override
+    @LogExecutionTime
     public LinkInfoResponseDto createLinkInfo(CreateLinkInfoRequestDto request) {
         String randomString = generateShortLink();
 
@@ -43,6 +45,7 @@ public class LinkInfoServiceImpl implements LinkInfoService {
     }
 
     @Override
+    @LogExecutionTime
     public LinkInfoResponseDto getByShortLink(String shortLink) {
         return linkInfoRepository.findByShortLink(shortLink)
                 .map(LinkInfoServiceImpl::linkInfoResponseBuilder)
@@ -50,17 +53,20 @@ public class LinkInfoServiceImpl implements LinkInfoService {
     }
 
     @Override
+    @LogExecutionTime
     public List<LinkInfoResponseDto> findByFilter() {
         return linkInfoRepository.findAll().stream()
                 .map(LinkInfoServiceImpl::linkInfoResponseBuilder).toList();
     }
 
     @Override
+    @LogExecutionTime
     public void deleteShortLinkById(UUID shortLink) {
         linkInfoRepository.deleteById(shortLink);
     }
 
     @Override
+    @LogExecutionTime
     public LinkInfoResponseDto updateLinkInfo(UpdateLinkInfoRequestDto request) {
         return linkInfoRepository.update(request);
     }
