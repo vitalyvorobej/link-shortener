@@ -1,12 +1,13 @@
 package com.course.project.varabei.linkshortener.service.impl;
 
-import com.course.project.varabei.linkshortener.configuration.LinkInfoProperty;
+import com.course.project.varabei.linkshortener.configuration.LinkShortenerProperty;
 import com.course.project.varabei.linkshortener.dao.dto.request.CreateLinkInfoRequestDto;
 import com.course.project.varabei.linkshortener.dao.dto.request.UpdateLinkInfoRequestDto;
 import com.course.project.varabei.linkshortener.dao.dto.response.LinkInfoResponseDto;
 import com.course.project.varabei.linkshortener.dao.model.LinkInfo;
 import com.course.project.varabei.linkshortener.dao.repository.LinkInfoRepository;
 import com.course.project.varabei.linkshortener.service.LinkInfoService;
+import com.course.project.varabei.linkshortener.service.annotation.ExecutionTimeLog;
 import com.course.project.varabei.linkshortener.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -21,10 +22,11 @@ import java.util.UUID;
 public class LinkInfoServiceImpl implements LinkInfoService {
 
     private final LinkInfoRepository linkInfoRepository;
-    private final LinkInfoProperty linkInfoProperty;
+    private final LinkShortenerProperty linkShortenerProperty;
 
 
     @Override
+    @ExecutionTimeLog
     public LinkInfoResponseDto createLinkInfo(CreateLinkInfoRequestDto request) {
         String randomString = generateShortLink();
 
@@ -43,6 +45,7 @@ public class LinkInfoServiceImpl implements LinkInfoService {
     }
 
     @Override
+    @ExecutionTimeLog
     public LinkInfoResponseDto getByShortLink(String shortLink) {
         return linkInfoRepository.findByShortLink(shortLink)
                 .map(LinkInfoServiceImpl::linkInfoResponseBuilder)
@@ -50,24 +53,27 @@ public class LinkInfoServiceImpl implements LinkInfoService {
     }
 
     @Override
+    @ExecutionTimeLog
     public List<LinkInfoResponseDto> findByFilter() {
         return linkInfoRepository.findAll().stream()
                 .map(LinkInfoServiceImpl::linkInfoResponseBuilder).toList();
     }
 
     @Override
+    @ExecutionTimeLog
     public void deleteShortLinkById(UUID shortLink) {
         linkInfoRepository.deleteById(shortLink);
     }
 
     @Override
+    @ExecutionTimeLog
     public LinkInfoResponseDto updateLinkInfo(UpdateLinkInfoRequestDto request) {
         return linkInfoRepository.update(request);
     }
 
 
     private String generateShortLink() {
-        return RandomStringUtils.randomAlphanumeric(linkInfoProperty.getShortLinkLength());
+        return RandomStringUtils.randomAlphanumeric(linkShortenerProperty.getShortLinkLength());
     }
 
     private static LinkInfoResponseDto linkInfoResponseBuilder(LinkInfo link) {
