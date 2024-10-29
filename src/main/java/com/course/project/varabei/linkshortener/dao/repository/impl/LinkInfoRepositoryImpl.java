@@ -1,15 +1,13 @@
 package com.course.project.varabei.linkshortener.dao.repository.impl;
 
 import com.course.project.varabei.linkshortener.dao.dto.request.UpdateLinkInfoRequestDto;
-import com.course.project.varabei.linkshortener.dao.dto.response.LinkInfoResponseDto;
-import com.course.project.varabei.linkshortener.dao.mapper.response.UpdateLinkInfoDaoResponseMapperImpl;
 import com.course.project.varabei.linkshortener.dao.model.LinkInfo;
 import com.course.project.varabei.linkshortener.dao.repository.LinkInfoRepository;
 import com.course.project.varabei.linkshortener.service.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,16 +20,14 @@ import java.util.concurrent.ConcurrentMap;
 public class LinkInfoRepositoryImpl implements LinkInfoRepository {
 
     private final ConcurrentMap<String, LinkInfo> linkInfoMap = new ConcurrentHashMap<>();
-    private UpdateLinkInfoDaoResponseMapperImpl updateLinkInfoDaoResponseMapper;
-
-    @Autowired
-    public void setUpdateLinkInfoDaoResponseMapper(UpdateLinkInfoDaoResponseMapperImpl updateLinkInfoDaoResponseMapper) {
-        this.updateLinkInfoDaoResponseMapper = updateLinkInfoDaoResponseMapper;
-    }
 
     @Override
-    public Optional<LinkInfo> findByShortLink(String shortLink) {
-        return Optional.ofNullable(linkInfoMap.get(shortLink));
+    public Optional<LinkInfo> findByShortLinkAndActiveIsTrueAndEndTimeIsAfter(String shortLink) {
+        return Optional.ofNullable(linkInfoMap.get(shortLink))
+                .filter(LinkInfo::getActive)
+                .filter(linkInfo -> linkInfo.getEndTime().isAfter(LocalDateTime.now()))
+                .map(Optional::of)
+                .orElseThrow(() -> new NotFoundException("Link expired"));
     }
 
     @Override
@@ -54,15 +50,10 @@ public class LinkInfoRepositoryImpl implements LinkInfoRepository {
     }
 
     @Override
-    public LinkInfoResponseDto update(UpdateLinkInfoRequestDto requestDto) {
+    public LinkInfo findById(UpdateLinkInfoRequestDto requestDto) {
         String id = requestDto.getId();
         String dtoShortLinkForUpdate = searchShortLinkInMapById(UUID.fromString(id));
-
-        LinkInfo linkInfo = linkInfoMap.get(dtoShortLinkForUpdate);
-        updateLinkInfoDaoResponseMapper.updateLinkInfoFromDto(requestDto, linkInfo);
-
-        log.info("Entry with id {} was updated in the map", id);
-        return updateLinkInfoDaoResponseMapper.mapToResponse(requestDto);
+        return linkInfoMap.get(dtoShortLinkForUpdate);
     }
 
     private String searchShortLinkInMapById(UUID id) {

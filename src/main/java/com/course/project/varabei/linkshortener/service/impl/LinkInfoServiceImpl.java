@@ -9,9 +9,12 @@ import com.course.project.varabei.linkshortener.dao.repository.LinkInfoRepositor
 import com.course.project.varabei.linkshortener.service.LinkInfoService;
 import com.course.project.varabei.linkshortener.service.annotation.ExecutionTimeLog;
 import com.course.project.varabei.linkshortener.service.exception.NotFoundException;
+import com.course.project.varabei.linkshortener.service.mapper.LinkInfoToResponseDtoMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +26,12 @@ public class LinkInfoServiceImpl implements LinkInfoService {
 
     private final LinkInfoRepository linkInfoRepository;
     private final LinkShortenerProperty linkShortenerProperty;
+    private LinkInfoToResponseDtoMapper linkInfoMapper;
 
+    @Autowired
+    public void setLinkInfoMapper(LinkInfoToResponseDtoMapper linkInfoMapper) {
+        this.linkInfoMapper = linkInfoMapper;
+    }
 
     @Override
     @ExecutionTimeLog
@@ -41,22 +49,20 @@ public class LinkInfoServiceImpl implements LinkInfoService {
 
         LinkInfo savedLink = linkInfoRepository.save(linkInfo);
 
-        return linkInfoResponseBuilder(savedLink);
+        return linkInfoMapper.mapToResponseDto(savedLink);
     }
 
     @Override
     @ExecutionTimeLog
     public LinkInfoResponseDto getByShortLink(String shortLink) {
-        return linkInfoRepository.findByShortLink(shortLink)
-                .map(LinkInfoServiceImpl::linkInfoResponseBuilder)
-                .orElseThrow(() -> new NotFoundException("Link was not found " + shortLink));
+        return linkInfoRepository.findByShortLinkAndActiveIsTrueAndEndTimeIsAfter(shortLink)
+                .map(linkInfo -> linkInfoMapper.mapToResponseDto(linkInfo)).orElseThrow(() -> new NotFoundException("Link was not found " + shortLink));
     }
 
     @Override
     @ExecutionTimeLog
     public List<LinkInfoResponseDto> findByFilter() {
-        return linkInfoRepository.findAll().stream()
-                .map(LinkInfoServiceImpl::linkInfoResponseBuilder).toList();
+        return linkInfoRepository.findAll().stream().map(linkInfo -> linkInfoMapper.mapToResponseDto(linkInfo)).toList();
     }
 
     @Override
@@ -68,24 +74,38 @@ public class LinkInfoServiceImpl implements LinkInfoService {
     @Override
     @ExecutionTimeLog
     public LinkInfoResponseDto updateLinkInfo(UpdateLinkInfoRequestDto request) {
-        return linkInfoRepository.update(request);
-    }
+        boolean isUpdated = false;
 
+        LinkInfo linkInfo = linkInfoRepository.findById(request);
+
+        if (StringUtils.hasText(request.getLink())) {
+            linkInfo.setLink(request.getLink());
+            isUpdated = true;
+        }
+
+        if (request.getEndTime() != null) {
+            linkInfo.setEndTime(request.getEndTime());
+            isUpdated = true;
+        }
+
+        if (StringUtils.hasText(request.getDescription())) {
+            linkInfo.setDescription(request.getDescription());
+            isUpdated = true;
+        }
+
+        if (request.getActive() != null) {
+            linkInfo.setActive(request.getActive());
+            isUpdated = true;
+        }
+
+        if (isUpdated) {
+            linkInfoRepository.save(linkInfo);
+        }
+
+        return linkInfoMapper.mapToResponseDto(linkInfo);
+    }
 
     private String generateShortLink() {
         return RandomStringUtils.randomAlphanumeric(linkShortenerProperty.getShortLinkLength());
-    }
-
-    private static LinkInfoResponseDto linkInfoResponseBuilder(LinkInfo link) {
-        return LinkInfoResponseDto
-                .builder()
-                .id(link.getId())
-                .shortLink(link.getShortLink())
-                .openingCount(link.getOpeningCount())
-                .link(link.getLink())
-                .endTime(link.getEndTime())
-                .description(link.getDescription())
-                .active(link.getActive())
-                .build();
     }
 }
