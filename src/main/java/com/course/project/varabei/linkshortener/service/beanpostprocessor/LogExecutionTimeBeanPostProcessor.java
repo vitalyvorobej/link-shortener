@@ -33,7 +33,9 @@ public class LogExecutionTimeBeanPostProcessor implements BeanPostProcessor {
 
             if (isAnnotated) {
                 beanMethodsDataMapByBeanName.putIfAbsent(beanName, new BeanMethodsData(bean.getClass(), new ArrayList<>()));
-                beanMethodsDataMapByBeanName.get(beanName).annotatedMethods().add(method);
+                beanMethodsDataMapByBeanName.get(beanName)
+                        .annotatedMethods()
+                        .add(method);
             }
         }
 
@@ -52,7 +54,8 @@ public class LogExecutionTimeBeanPostProcessor implements BeanPostProcessor {
         List<Method> annotatedMethods = beanMethodsData.annotatedMethods();
 
         return Proxy.newProxyInstance(beanClass.getClassLoader(), bean.getClass().getInterfaces(), (proxy, method, args) -> {
-            boolean isAnnotated = annotatedMethods.stream().anyMatch(pojoMethod -> methodEquals(pojoMethod, method));
+            boolean isAnnotated = annotatedMethods.stream()
+                    .anyMatch(pojoMethod -> methodEquals(pojoMethod, method));
 
             if (isAnnotated) {
                 long startTime = System.currentTimeMillis();

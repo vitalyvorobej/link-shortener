@@ -9,10 +9,9 @@ import com.course.project.varabei.linkshortener.dao.repository.LinkInfoRepositor
 import com.course.project.varabei.linkshortener.service.LinkInfoService;
 import com.course.project.varabei.linkshortener.service.annotation.ExecutionTimeLog;
 import com.course.project.varabei.linkshortener.service.exception.NotFoundException;
-import com.course.project.varabei.linkshortener.service.mapper.LinkInfoToResponseDtoMapper;
+import com.course.project.varabei.linkshortener.service.mapper.request.LinkInfoFromRequestDtoMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -26,43 +25,35 @@ public class LinkInfoServiceImpl implements LinkInfoService {
 
     private final LinkInfoRepository linkInfoRepository;
     private final LinkShortenerProperty linkShortenerProperty;
-    private LinkInfoToResponseDtoMapper linkInfoMapper;
-
-    @Autowired
-    public void setLinkInfoMapper(LinkInfoToResponseDtoMapper linkInfoMapper) {
-        this.linkInfoMapper = linkInfoMapper;
-    }
+    private final LinkInfoFromRequestDtoMapper linkInfoFromRequestDtoMapper;
 
     @Override
     @ExecutionTimeLog
     public LinkInfoResponseDto createLinkInfo(CreateLinkInfoRequestDto request) {
         String randomString = generateShortLink();
 
-        LinkInfo linkInfo = LinkInfo.builder()
-                .shortLink(randomString)
-                .openingCount(0L)
-                .link(request.getLink())
-                .endTime(request.getEndTime())
-                .description(request.getDescription())
-                .active(request.getActive())
-                .build();
+        LinkInfo linkInfo = linkInfoFromRequestDtoMapper.fromRequestDto(request, randomString);
 
         LinkInfo savedLink = linkInfoRepository.save(linkInfo);
 
-        return linkInfoMapper.mapToResponseDto(savedLink);
+        return linkInfoFromRequestDtoMapper.mapToResponseDto(savedLink);
     }
 
     @Override
     @ExecutionTimeLog
     public LinkInfoResponseDto getByShortLink(String shortLink) {
         return linkInfoRepository.findByShortLinkAndActiveIsTrueAndEndTimeIsAfter(shortLink)
-                .map(linkInfo -> linkInfoMapper.mapToResponseDto(linkInfo)).orElseThrow(() -> new NotFoundException("Link was not found " + shortLink));
+                .map(linkInfoFromRequestDtoMapper::mapToResponseDto)
+                .orElseThrow(() -> new NotFoundException("Link was not found " + shortLink));
     }
 
     @Override
     @ExecutionTimeLog
     public List<LinkInfoResponseDto> findByFilter() {
-        return linkInfoRepository.findAll().stream().map(linkInfo -> linkInfoMapper.mapToResponseDto(linkInfo)).toList();
+        return linkInfoRepository.findAll()
+                .stream()
+                .map(linkInfoFromRequestDtoMapper::mapToResponseDto)
+                .toList();
     }
 
     @Override
@@ -102,7 +93,7 @@ public class LinkInfoServiceImpl implements LinkInfoService {
             linkInfoRepository.save(linkInfo);
         }
 
-        return linkInfoMapper.mapToResponseDto(linkInfo);
+        return linkInfoFromRequestDtoMapper.mapToResponseDto(linkInfo);
     }
 
     private String generateShortLink() {
