@@ -1,6 +1,7 @@
 package com.course.project.varabei.linkshortener.service.controller;
 
 import com.course.project.varabei.linkshortener.dao.dto.request.CreateLinkInfoRequestDto;
+import com.course.project.varabei.linkshortener.dao.dto.request.FilterLinkInfoRequestDto;
 import com.course.project.varabei.linkshortener.dao.dto.request.UpdateLinkInfoRequestDto;
 import com.course.project.varabei.linkshortener.dao.dto.response.LinkInfoResponseDto;
 import com.course.project.varabei.linkshortener.service.LinkInfoService;
@@ -24,6 +25,7 @@ public class LinkInfoController {
     @PostMapping
     public CommonResponseDto<LinkInfoResponseDto> createShortLink(@RequestBody @Valid CommonRequestDto<CreateLinkInfoRequestDto> request) {
         LinkInfoResponseDto linkInfoResponse = linkInfoService.createLinkInfo(request.getBody());
+
         return CommonResponseDto
                 .<LinkInfoResponseDto>builder()
                 .id(UUID.randomUUID())
@@ -31,9 +33,10 @@ public class LinkInfoController {
                 .build();
     }
 
-    @GetMapping
-    public CommonResponseDto<List<LinkInfoResponseDto>> getListLinkInfo() {
-        List<LinkInfoResponseDto> response = linkInfoService.findByFilter();
+    @PostMapping("/filter")
+    public CommonResponseDto<List<LinkInfoResponseDto>> getListLinkInfo(@RequestBody @Valid CommonRequestDto<FilterLinkInfoRequestDto> request) {
+        List<LinkInfoResponseDto> response = linkInfoService.findByFilter(request.getBody());
+
         return CommonResponseDto.<List<LinkInfoResponseDto>>builder()
                 .id(UUID.randomUUID())
                 .body(response)
@@ -44,6 +47,7 @@ public class LinkInfoController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public CommonResponseDto<?> deleteShortLinkById(@PathVariable("id") String id) {
         linkInfoService.deleteShortLinkById(UUID.fromString(id));
+
         return CommonResponseDto.builder()
                 .id(UUID.randomUUID())
                 .build();
@@ -52,10 +56,10 @@ public class LinkInfoController {
     @PatchMapping
     public CommonResponseDto<LinkInfoResponseDto> updateShortLink(@RequestBody @Valid CommonRequestDto<UpdateLinkInfoRequestDto> request) {
         LinkInfoResponseDto linkInfoResponse = linkInfoService.updateLinkInfo(request.getBody());
+
         return CommonResponseDto.<LinkInfoResponseDto>builder()
                 .id(UUID.randomUUID())
                 .body(linkInfoResponse)
                 .build();
     }
-
 }
