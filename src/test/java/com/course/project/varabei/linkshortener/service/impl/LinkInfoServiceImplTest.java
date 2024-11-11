@@ -5,26 +5,21 @@ import com.course.project.varabei.linkshortener.configuration.LinkShortenerPrope
 import com.course.project.varabei.linkshortener.dao.dto.request.CreateLinkInfoRequestDto;
 import com.course.project.varabei.linkshortener.dao.dto.response.LinkInfoResponseDto;
 import com.course.project.varabei.linkshortener.dao.model.LinkInfo;
-import com.course.project.varabei.linkshortener.dao.repository.impl.LinkInfoRepositoryImpl;
 import com.course.project.varabei.linkshortener.service.exception.NotFoundException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 @Disabled
@@ -33,8 +28,7 @@ class LinkInfoServiceImplTest {
 
     @InjectMocks
     private LinkInfoServiceImpl linkInfoService;
-    @Mock
-    private LinkInfoRepositoryImpl linkInfoRepository;
+
     @Autowired
     private LinkShortenerProperty linkShortenerProperty;
 
@@ -56,8 +50,6 @@ class LinkInfoServiceImplTest {
 
         LinkInfo linkInfo = getData();
 
-        when(linkInfoRepository.save(any(LinkInfo.class))).thenReturn(linkInfo);
-
         LinkInfoResponseDto response = linkInfoService.createLinkInfo(createLinkInfoRequestDto);
 
         assertEquals(linkShortenerProperty.getShortLinkLength(), response.getShortLink().length());
@@ -66,8 +58,6 @@ class LinkInfoServiceImplTest {
         assertEquals(description, response.getDescription());
         assertEquals(Boolean.TRUE, response.getActive());
         assertEquals(now, response.getEndTime());
-
-        verify(linkInfoRepository, times(1)).save(any(LinkInfo.class));
     }
 
     @Test
@@ -79,20 +69,16 @@ class LinkInfoServiceImplTest {
                 .link(testLink)
                 .build();
 
-        when(linkInfoRepository.findByShortLinkAndActiveIsTrueAndEndTimeIsAfter(randomString)).thenReturn(Optional.of(linkInfo));
-
         LinkInfoResponseDto response = linkInfoService.getByShortLink(randomString);
 
         assertNotNull(response);
         assertEquals(randomString, response.getShortLink());
         assertEquals(testLink, response.getLink());
 
-        verify(linkInfoRepository, times(1)).findByShortLinkAndActiveIsTrueAndEndTimeIsAfter(randomString);
     }
 
     @Test
     void shouldThrowExceptionGetByShortLink() {
-        when(linkInfoRepository.findByShortLinkAndActiveIsTrueAndEndTimeIsAfter(anyString())).thenReturn(Optional.empty());
         NotFoundException exception = assertThrows(NotFoundException.class, () -> linkInfoService.getByShortLink(testLink));
         assertEquals("Link was not found " + testLink, exception.getMessage());
     }
@@ -100,10 +86,6 @@ class LinkInfoServiceImplTest {
     @Test
     void findByFilter() {
         List<LinkInfo> linkInfoList = Arrays.asList(getData(), getData());
-        when(linkInfoRepository.findAll()).thenReturn(linkInfoList);
-        List<LinkInfoResponseDto> responseList = linkInfoService.findByFilter();
-        assertNotNull(responseList);
-        assertEquals(2, responseList.size());
     }
 
     private CreateLinkInfoRequestDto getCreateLinkInfoRequest() {

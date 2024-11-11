@@ -1,6 +1,7 @@
 package com.course.project.varabei.linkshortener.service;
 
 import com.course.project.varabei.linkshortener.dao.dto.request.CreateLinkInfoRequestDto;
+import com.course.project.varabei.linkshortener.dao.dto.request.FilterLinkInfoRequestDto;
 import com.course.project.varabei.linkshortener.dao.dto.request.UpdateLinkInfoRequestDto;
 import com.course.project.varabei.linkshortener.dao.dto.response.LinkInfoResponseDto;
 
@@ -13,7 +14,7 @@ public interface LinkInfoService {
 
     LinkInfoResponseDto getByShortLink(String shortLink);
 
-    List<LinkInfoResponseDto> findByFilter();
+    List<LinkInfoResponseDto> findByFilter(FilterLinkInfoRequestDto requestDto);
 
     void deleteShortLinkById(UUID shortLinkId);
 
