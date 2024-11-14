@@ -1,5 +1,6 @@
 package com.course.project.varabei.linkshortener.service.impl;
 
+import com.course.project.varabei.annotation.ExecutionTimeLog;
 import com.course.project.varabei.linkshortener.configuration.LinkShortenerProperty;
 import com.course.project.varabei.linkshortener.dao.dto.request.CreateLinkInfoRequestDto;
 import com.course.project.varabei.linkshortener.dao.dto.request.FilterLinkInfoRequestDto;
@@ -9,7 +10,6 @@ import com.course.project.varabei.linkshortener.dao.dto.response.LinkInfoRespons
 import com.course.project.varabei.linkshortener.dao.model.LinkInfo;
 import com.course.project.varabei.linkshortener.dao.repository.LinkInfoRepository;
 import com.course.project.varabei.linkshortener.service.LinkInfoService;
-import com.course.project.varabei.linkshortener.service.annotation.ExecutionTimeLog;
 import com.course.project.varabei.linkshortener.service.exception.NotFoundException;
 import com.course.project.varabei.linkshortener.service.exception.NotFoundPageShortLinkException;
 import com.course.project.varabei.linkshortener.service.mapper.request.LinkInfoFromRequestDtoMapper;
