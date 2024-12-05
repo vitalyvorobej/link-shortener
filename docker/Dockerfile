@@ -2,7 +2,6 @@ FROM amazoncorretto:17.0.7-alpine
 
 COPY ../build/libs/link-shortener-1.0-SNAPSHOT.jar ./link-shortener.jar
 
-ENV SPRING_PROFILES_ACTIVE=docker-compose
 ENV TZ=Europe/Moscow
 
 EXPOSE 8080
