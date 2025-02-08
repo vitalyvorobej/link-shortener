@@ -4,11 +4,13 @@ pipeline {
     stages {
         stage('test') {
             steps {
+                sh 'chmod +x ./gradlew'
                 sh './gradlew test'
             }
         }
         stage('build jar') {
             steps {
+                sh 'chmod +x ./gradlew'
                 sh './gradlew build -x test'
             }
         }

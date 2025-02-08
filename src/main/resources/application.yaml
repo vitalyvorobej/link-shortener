@@ -21,6 +21,9 @@ spring:
 
 link-shortener:
   short-link-length: 8
+  #every day at 11pm
+  remove-old-link-infos:
+    cron: "0 0 23 * * *"
 
 logging:
   enabled-log-execution-time: false
