@@ -33,6 +33,16 @@ public interface LinkInfoRepository extends JpaRepository<LinkInfo, UUID> {
     void incrementOpeningCount(String shortLink);
 
     @Query(value = """
+            DELETE
+            FROM LinkInfo
+            WHERE active = FALSE
+              AND updateTime < :cutOffDateTime
+            """)
+    @Modifying
+    @Transactional
+    void deleteExpiredLinks(LocalDateTime cutOffDateTime);
+
+    @Query(value = """
             FROM LinkInfo
             WHERE (:linkPart IS NULL OR lower(link) LIKE '%' || lower(cast(:linkPart AS String)) || '%')
               AND (cast(:endTimeFrom AS DATE) IS NULL OR endTime >= :endTimeFrom)
